@@ -16,9 +16,16 @@ NOTE = (
 
 
 def main() -> None:
+    if not 1 <= len(NOTE) <= 200 or "\n" in NOTE:
+        raise ValueError("note must be a single line of 1-200 characters")
     out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "entry.txt").write_text(NOTE, encoding="utf-8")
+    target = out_dir / "entry.txt"
+    target.write_text(NOTE, encoding="utf-8")
+    # Round-trip check: read the file back and make sure the bytes we wrote
+    # are exactly the note, so a half-written or mangled file never ships.
+    if target.read_text(encoding="utf-8") != NOTE:
+        raise RuntimeError("round-trip verification failed for entry.txt")
 
 
 if __name__ == "__main__":
